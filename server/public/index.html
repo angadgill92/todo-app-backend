@@ -3,87 +3,82 @@
 
 <head>
     <title>ToDo List</title>
-    
+
     <!-- Auth0Lock script -->
-    <script src="https://cdn.auth0.com/js/lock-passwordless-1.0.min.js"></script>
-    <script type="text/javascript">
-    function login() {
-        // Initialize Passwordless Lock instance
-        var lock = new Auth0LockPasswordless('ZpDMrA1CKwbfVpSTjNAs7ucK6NcixGl4', 'angadgill92.auth0.com');
-        // Open the lock in Email Code mode with the ability to handle
-        // the authentication in page
-        var appearanceOpts = {
-            autoclose: true
-        };
-        // Open the lock in SMS mode with the ability to handle the authentication in page
-        lock.sms(appearanceOpts, function(error, profile, id_token, access_token, state, refresh_token) {
-            if (!error) {
-                //usually save profile and id_token
-                setusername(id_token, profile.name);
-                console.log('profile before ' + profile.name);
 
-                localStorage.setItem('id_token', id_token)
-                localStorage.setItem('profile', profile.name)
-                console.log(profile)
-                console.log('profile is ' + profile.name);
-            }
-        });
-    }
-
-
-
-
-
-    function setusername(token, name) {
-        var data = {
-            accessToken: token,
-            phone: name
-        };
-
-        console.log(data);
-        var http = new XMLHttpRequest();
-        http.open("POST", "/api/validate", true)
-        http.setRequestHeader("content-type", "application/json");
-        http.onreadystatechange = function() {
-            if (http.readyState == 4 && http.status == 200) {
-                console.log(http.responseText)
-                var resData = JSON.parse(http.responseText);
-                var userData = {
-                    name: resData.name,
-                    phone: resData.phone
-                };
-                if (userData.name == "") {
-                    while (userData.name == "" || userData.name === "\s" || userData.name === null) {
-                        userData.name = prompt("Enter your name (without spaces)");
-                    }
-                    console.log(localStorage.getItem(userData));
-                    var xhrData = {
-                        name: userData.name,
-                        phonenm: userData.phone
-                    };
-                    var xhr = new XMLHttpRequest();
-                    xhr.open("POST", "/api/users", true);
-                    xhr.setRequestHeader("content-type", "application/json");
-                    xhr.onreadystatechange = function(){
-                        if(xhr.readyState == 4 && xhr.status == 200){
-                            console.log(xhr.responseText)
-                            window.location = "/todo.html";
-                        }
-                    }
-                    xhr.send(JSON.stringify(xhrData));                    
-                }
-                localStorage.setItem('userData', JSON.stringify(userData));
-                window.location = "/todo.html";                
-            }
-        }
-        http.send(JSON.stringify(data));
-    }
-    </script>
 </head>
 
-<body onload="login();">
-    <script>
-    </script>
+<body>
+<script src="https://cdn.auth0.com/js/lock-passwordless-1.0.min.js"></script>
+<script src="js/io-square-browser.js"></script>
+<script type="text/javascript">
+function login () {
+  // Initialize Passwordless Lock instance
+  var lock = new Auth0LockPasswordless('ZpDMrA1CKwbfVpSTjNAs7ucK6NcixGl4', 'angadgill92.auth0.com')
+  // Open the lock in Email Code mode with the ability to handle
+  // the authentication in page
+  var appearanceOpts = {
+    autoclose: true
+  }
+  // Open the lock in SMS mode with the ability to handle the authentication in page
+  lock.sms(appearanceOpts, function (error, profile, id_token, access_token, state, refresh_token) {
+    if (!error) {
+      // usually save profile and id_token
+      setusername(id_token, profile.name)
+      localStorage.setItem('id_token', id_token)
+      localStorage.setItem('profile', profile.name)
+    }
+  })
+}
+
+function setusername (token, name) {
+  var data = {
+    accessToken: token,
+    phone: name
+  }
+  IO.postJSON('/api/validate', data)
+    .then(function (data) {
+      localStorage.setItem('userData', JSON.stringify(data))
+      window.location = '/todo.html'
+    })
+  // var http = new XMLHttpRequest()
+  // http.open('POST', '/api/validate', true)
+  // http.setRequestHeader('content-type', 'application/json')
+  // http.onreadystatechange = function () {
+  //   if (http.readyState == 4 && http.status == 200) {
+  //     var resData = JSON.parse(http.responseText)
+  //     var userData = {
+  //       name: resData.name,
+  //       phone: resData.phone
+  //     }
+  //     if (userData.name == '') {
+  //       while (userData.name == '' || userData.name === '\s' || userData.name === null) {
+  //         userData.name = prompt('Enter your name (without spaces)')
+  //       }
+  //       var xhrData = {
+  //         name: userData.name,
+  //         phonenm: userData.phone
+  //       }
+  //       var xhr = new XMLHttpRequest()
+  //       xhr.open('POST', '/api/users', true)
+  //       xhr.setRequestHeader('content-type', 'application/json')
+  //       xhr.onreadystatechange = function () {
+  //         if (xhr.readyState == 4 && xhr.status == 200) {
+  //           window.location = '/todo.html'
+  //         }
+  //       }
+  //       xhr.send(JSON.stringify(xhrData))
+  //     }
+  //     localStorage.setItem('userData', JSON.stringify(userData))
+  //     window.location = '/todo.html'
+  //   }
+  // }
+  //
+  // http.send(JSON.stringify(data))
+}
+login()
+
+  </script>
 </body>
 
 </html>

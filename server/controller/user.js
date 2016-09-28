@@ -9,9 +9,9 @@ const user = {}
 
 function createNewUser(user){
     graph.load()
-    
+
     var god = new graph.Query(graph.find('power', 'over9000'))
- 
+
     var temp = god.next().out
     var result = []
     //console.log(temp)
@@ -41,7 +41,7 @@ function createNewUser(user){
 function getUsers(userId){
     graph.load()
     var god = new graph.Query(graph.find('power', 'over9000'))
- 
+
     var temp = god.next().out
     var result = []
     //console.log(temp)
@@ -50,7 +50,7 @@ function getUsers(userId){
         result.push(graph.read(userId).data)
     }
     // console.log(result)
-    return result 
+    return result
 
     //remove authorisation token
     //Need to filter out the user himself from his id
@@ -82,12 +82,12 @@ user.handlePost = function(req,res,next){
             res.status(500).json({
                 message: "Wrong input format"
             })
-        }    
+        }
     } catch(err) {
         res.status(500).json({
             message: "ERROR"
         })
-    }    
+    }
 }
 
 
@@ -97,6 +97,7 @@ user.handleGet = function(req,res,next){
         var id = req.params.phonenm
         // console.log(id)
         let list = getUsers(id)
+        console.log(list)
         res.send(list)
     } catch(err) {
         res.status(500).json({
