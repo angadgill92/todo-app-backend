@@ -10,8 +10,11 @@ var assignNum
 var taskObj
 
 var socket = io()
+
 var chatModal = document.getElementById('chat')
 var chatBox = document.getElementById('chatbox')
+var sendButton = document.querySelector('#submitmsg')
+var userMsg = document.querySelector('#usermsg')
 var closeChat = document.getElementsByClassName('close')[0]
 
 closeChat.onclick = function () {
@@ -40,7 +43,7 @@ function getTasks () {
     .then(function (taskList) {
       addView(taskList)
     })
-// 
+//
 }
 
 function addView (taskList) {
@@ -109,23 +112,6 @@ function addRow (task) {
       }
     })
 
-  IO.click(sendButton)
-    .map(function () {
-      var timestamp = Date()
-      return {
-        'sentBy': user.name,
-        'time': timestamp,
-        'message': userMsg.value
-      }
-    })
-    .bind(function (outGoingMsg) {
-      socket.emit('sendmessage', outGoingMsg)
-      displayComment(outGoingMsg)
-      return new IO.postJSON('/api/comment/', { 'id': task.id, 'comment': outGoingMsg})
-    })
-    .then(function (e) { console.log('msg sent')} // add function to post comment
-  )
-
   var iconTrash = document.createElement('i')
   iconTrash.setAttribute('class', 'small material-icons')
   iconTrash.innerHTML = 'delete'
@@ -169,27 +155,36 @@ socket.on('connect', function () {
   socket.emit('joinroom', user.name)
 })
 
+// sending messages
+
+IO.click(sendButton)
+  .map(function () {
+    var timestamp = Date()
+    return {
+      'sentBy': user.name,
+      'time': timestamp,
+      'message': userMsg.value
+    }
+  })
+  .bind(function (outGoingMsg) {
+    socket.emit('sendmessage', outGoingMsg)
+    displayComment(outGoingMsg)
+    return new IO.postJSON('/api/comment/', { 'id': taskObj.id, 'comment': outGoingMsg})
+  })
+  .then(function (e) { console.log('msg sent')} // add function to post comment
+)
 // recieving message
 
-socket.on('discuss', function (incomingMsg) {
+socket.on('incoming', function (incomingMsg) {
+  console.log(incomingMsg)
   displayComment(incomingMsg)
 })
 
-// sending messages
-var sendButton = document.querySelector('#submitmsg')
-var userMsg = document.querySelector('#usermsg')
-
-// function putComment (task) {
-//   var comment = new XMLHttpRequest()
-//   comment.open('PUT', '/api/comment/', true)
-//   comment.setRequestHeader('content-type', 'application/json')
-//   comment.onreadystatechange = function () {
-//     if (comment.readyState == 4 && comment.status == 200) {
-//       console.log('function executed')
-//     }
-//   }
-//   comment.send(JSON.stringify(task))
-// }
+// notifying on new task
+socket.on('notify', function(data) {
+  alert('You have a new task from : ' + data)
+  window.location.reload()
+})
 
 function assignTo () {
   selectName = document.getElementById('assignTo')
@@ -232,12 +227,12 @@ function createTask () {
 
   IO.postJSON('/api/tasks/', newTask)
     .then(function (e) {
-      // window.location.reload()
-      // include socket emit
-      //   socket.emit('newTask', {
-      //     assgnTo: assignName,
-      //     from: user.name
-      //   })
+      socket.emit('newTask', {
+      assgnTo: assignName,
+      from: user.name
     })
-  window.location.reload()
+     window.location.reload()
+    })
+})
+
 }
